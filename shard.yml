@@ -1,0 +1,15 @@
+name: collections
+version: 0.1.0
+
+authors:
+  - Lillevang <jeppe.lillevang@gmail.com>
+
+description: >
+  A Crystal shard providing heap implementations such as MinBinaryHeap and MaxBinaryHeap.
+
+dependencies: {}
+  
+
+crystal: '>= 1.14.0'
+
+license: MIT
