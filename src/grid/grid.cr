@@ -70,8 +70,8 @@ module Collections
 
     # Find the shortest path between two points using BFS
     def shortest_path(
-      start : Point,
-      goal : Point,
+      start : Tuple(Int32, Int32) | Array(Int32) | Point,
+      goal : Tuple(Int32, Int32) | Array(Int32) | Point,
       filter_blocked : Bool = true
     ) : Tuple(Int32, Array(Point)) | Nil
       # Early exit if start or goal is invalid
