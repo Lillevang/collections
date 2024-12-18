@@ -52,4 +52,60 @@ describe Collections::Grid do
       Collections::Grid::Point.new(2, 3),
     ])
   end
+
+  it "finds the shortest path in an empty grid" do
+    grid = Collections::Grid.new(5, 5, false)
+    start = Collections::Grid::Point.new(0, 0)
+    goal = Collections::Grid::Point.new(4, 4)
+    distance = grid.shortest_path(start, goal)
+    distance[0].should eq(8) if distance
+  end
+
+  it "finds no path if the goal is blocked" do
+    grid = Collections::Grid.new(5, 5, false)
+    start = Collections::Grid::Point.new(0, 0)
+    goal = Collections::Grid::Point.new(4, 4)
+    grid.set(4, 4, true) # Block the goal
+    distance = grid.shortest_path(start, goal)
+    distance.should be_nil # No path exists
+  end
+
+  it "finds the shortest path in a partially blocked grid" do
+    grid = Collections::Grid.new(5, 5, false)
+    start = Collections::Grid::Point.new(0, 0)
+    goal = Collections::Grid::Point.new(4, 4)
+
+    # Block some cells
+    grid.set(1, 0, true)
+    grid.set(1, 1, true)
+    grid.set(1, 2, true)
+
+    distance = grid.shortest_path(start, goal)
+    grid.print_grid(distance[1]) if distance
+    distance[0].should eq(8) if distance 
+  end
+
+  it "returns nil if the start is blocked" do
+    grid = Collections::Grid.new(5, 5, false)
+    start = Collections::Grid::Point.new(0, 0)
+    goal = Collections::Grid::Point.new(4, 4)
+
+    grid.set(0, 0, true) # Block the start
+
+    distance = grid.shortest_path(start, goal)
+    distance.should be_nil # No path exists
+  end
+
+  it "returns nil if the start and goal are disconnected" do
+    grid = Collections::Grid.new(5, 5, false)
+    start = Collections::Grid::Point.new(0, 0)
+    goal = Collections::Grid::Point.new(4, 4)
+
+    # Block a wall separating start and goal
+    (0...5).each { |i| grid.set(2, i, true) }
+
+    distance = grid.shortest_path(start, goal)
+    distance.should be_nil # No path exists
+  end
+
 end

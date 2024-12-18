@@ -67,5 +67,65 @@ module Collections
     private def out_of_bounds?(x : Int32, y : Int32) : Bool
       x < 0 || x >= @rows || y < 0 || y >= @cols
     end
+
+    # Find the shortest path between two points using BFS
+    def shortest_path(
+      start : Point,
+      goal : Point,
+      filter_blocked : Bool = true
+    ) : Tuple(Int32, Array(Point)) | Nil
+      # Early exit if start or goal is invalid
+      return nil if blocked?(start.x, start.y) || blocked?(goal.x, goal.y)
+
+      directions = [
+        {-1, 0}, # Up
+        {1, 0},  # Down
+        {0, -1}, # Left
+        {0, 1},  # Right
+      ]
+
+      queue = [] of Tuple(Int32, Point, Array(Point)) # (distance, point, path)
+      queue << {0, start, [start]}
+      visited = Set(Point).new
+
+      while queue.any?
+        distance, point, path = queue.shift
+
+        # Goal reached
+        return {distance, path} if point == goal
+
+        # Skip if already visited
+        next unless visited.add?(point)
+
+        # Explore neighbors
+        directions.each do |dx, dy|
+          nx, ny = point.x + dx, point.y + dy
+          neighbor = Point.new(nx, ny)
+          if !out_of_bounds?(nx, ny) && (!filter_blocked || !blocked?(nx, ny))
+            queue << {distance + 1, neighbor, path + [neighbor]}
+          end
+        end
+      end
+
+      nil # No path found
+    end
+
+    def print_grid(path : Array(Point) = [] of Point)
+      path_set = Set(Point).new(path) # Convert path to a set for quick lookup
+
+      (0...@rows).each do |x|
+        row = (0...@cols).map do |y|
+          point = Point.new(x, y)
+          if path_set.includes?(point)
+            "o" # Part of the path
+          elsif blocked?(x, y)
+            "#" # Blocked cell
+          else
+            "." # Free cell
+          end
+        end.join
+        puts row
+      end
+    end
   end
 end
