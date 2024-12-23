@@ -55,6 +55,6 @@ describe Collections::BinaryHeapMax do
     end
 
     # The extracted elements should be in descending order
-    sorted.should eq(dataset.sort.reverse)
+    sorted.should eq(dataset.sort.reverse!)
   end
 end

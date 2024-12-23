@@ -11,7 +11,7 @@ module Collections
       value == other.value
     end
 
-    def hash()
+    def hash
       value.hash
     end
   end

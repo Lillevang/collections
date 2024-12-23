@@ -10,8 +10,8 @@ module Collections
     def add(element : T | Array(T) | Heap(T))
       case element
       when Array(T)
-        element.each do |el|
-          @elements << el
+        element.each do |arr_el|
+          @elements << arr_el
           swim_up(@elements.size - 1)
         end
       when Heap(T)
@@ -20,8 +20,8 @@ module Collections
           raise ArgumentError.new("Cannot add a heap to itself.")
         end
 
-        element.elements.each do |el|
-          @elements << el
+        element.elements.each do |heap_el|
+          @elements << heap_el
           swim_up(@elements.size - 1)
         end
       else

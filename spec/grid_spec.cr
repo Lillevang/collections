@@ -81,8 +81,8 @@ describe Collections::Grid do
     grid.set(1, 2, true)
 
     distance = grid.shortest_path(start, goal)
-    #grid.print_grid(distance[1]) if distance
-    distance[0].should eq(8) if distance 
+    # grid.print_grid(distance[1]) if distance
+    distance[0].should eq(8) if distance
   end
 
   it "returns nil if the start is blocked" do
@@ -107,5 +107,4 @@ describe Collections::Grid do
     distance = grid.shortest_path(start, goal)
     distance.should be_nil # No path exists
   end
-
 end

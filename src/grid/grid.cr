@@ -57,8 +57,8 @@ module Collections
         {0, 1},  # Right
       ]
 
-      directions.map do |dx, dy|
-        nx, ny = x + dx, y + dy
+      directions.compact_map do |dir_x, dir_y|
+        nx, ny = x + dir_x, y + dir_y
         Point.new(nx, ny) unless out_of_bounds?(nx, ny) || (filter_blocked && blocked?(nx, ny))
       end.compact
     end
@@ -74,12 +74,10 @@ module Collections
       goal : Tuple(Int32, Int32) | Array(Int32) | Point,
       filter_blocked : Bool = true
     ) : Tuple(Int32, Array(Point)) | Nil
+      start = start.is_a?(Point) ? start : Point.new(start[0], start[1])
+      goal = goal.is_a?(Point) ? goal : Point.new(goal[0], goal[1])
 
-    start = start.is_a?(Point) ? start : Point.new(start[0], start[1])
-    goal = goal.is_a?(Point) ? goal : Point.new(goal[0], goal[1])
-
-
-    # Early exit if start or goal is invalid
+      # Early exit if start or goal is invalid
       return nil if blocked?(start.x, start.y) || blocked?(goal.x, goal.y)
 
       directions = [
@@ -93,7 +91,7 @@ module Collections
       queue << {0, start, [start]}
       visited = Set(Point).new
 
-      while queue.any?
+      while !queue.empty?
         distance, point, path = queue.shift
 
         # Goal reached
@@ -103,8 +101,8 @@ module Collections
         next unless visited.add?(point)
 
         # Explore neighbors
-        directions.each do |dx, dy|
-          nx, ny = point.x + dx, point.y + dy
+        directions.each do |dir_x, dir_y|
+          nx, ny = point.x + dir_x, point.y + dir_y
           neighbor = Point.new(nx, ny)
           if !out_of_bounds?(nx, ny) && (!filter_blocked || !blocked?(nx, ny))
             queue << {distance + 1, neighbor, path + [neighbor]}

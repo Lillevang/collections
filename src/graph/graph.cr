@@ -47,7 +47,7 @@ module Collections
     end
 
     private def find_node(value : T) : Node(T)?
-      @adjacency_list.keys.find { |n| n.value == value }
+      @adjacency_list.keys.find { |node| node.value == value }
     end
   end
 end
