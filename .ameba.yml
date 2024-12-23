@@ -1,0 +1,6 @@
+Globs:
+  - "**/*.cr"
+  - "!lib"
+
+Excluded:
+  - src/compiler
