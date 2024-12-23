@@ -8,7 +8,10 @@ description: >
   A Crystal shard providing heap implementations such as MinBinaryHeap and MaxBinaryHeap.
 
 dependencies: {}
-  
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba  
 
 crystal: '>= 1.14.0'
 
