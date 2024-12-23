@@ -2,7 +2,7 @@ require "../util/node"
 
 module Collections
   class Graph(T)
-    @adjacency_list : Hash(Node(T), Array(Node(T)))
+    property @adjacency_list : Hash(Node(T), Array(Node(T)))
 
     def initialize
       @adjacency_list = {} of Node(T) => Array(Node(T))
