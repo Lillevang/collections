@@ -2,7 +2,7 @@ require "../src/graph/graph"
 require "./spec_helper"
 
 describe Collections::Graph do
-  describe "#initialize" do
+  describe "initialize" do
     it "creates an empty graph" do
       graph = Collections::Graph(Int32).new
       graph.empty?.should be_true
@@ -10,7 +10,7 @@ describe Collections::Graph do
     end
   end
 
-  describe "#add_node" do
+  describe "add_node" do
     it "adds a node to the graph" do
       graph = Collections::Graph(Int32).new
       node = graph.add_node(1)
@@ -19,7 +19,7 @@ describe Collections::Graph do
     end
   end
 
-  describe "#add_edge" do
+  describe "add_edge" do
     it "adds an edge between two nodes" do
       graph = Collections::Graph(Int32).new
       graph.add_edge(1, 2)
@@ -35,7 +35,7 @@ describe Collections::Graph do
     end
   end
 
-  describe "#remove_edge" do
+  describe "remove_edge" do
     it "removes an edge between two nodes" do
       graph = Collections::Graph(Int32).new
       graph.add_edge(1, 2)
@@ -45,7 +45,7 @@ describe Collections::Graph do
     end
   end
 
-  describe "#neighbors" do
+  describe "neighbors" do
     it "returns empty array for non-existent node" do
       graph = Collections::Graph(Int32).new
       graph.neighbors(1).should be_empty
@@ -59,7 +59,7 @@ describe Collections::Graph do
     end
   end
 end
-describe "#fully_connected?" do
+describe "fully_connected?" do
   it "returns true for empty array" do
     graph = Collections::Graph(Int32).new
     graph.fully_connected?([] of Int32).should be_true
@@ -89,12 +89,12 @@ describe "#fully_connected?" do
     graph = Collections::Graph(Int32).new
     graph.add_edge(1, 2)
     graph.add_edge(2, 3)
-    # Missing edge between 1 and 3
+    #Missing edge between 1 and 3
     graph.fully_connected?([1, 2, 3]).should be_false
   end
 end
 
-describe "#find_subgraphs" do
+describe "find_subgraphs" do
   it "finds all connected pairs" do
     graph = Collections::Graph(Int32).new
     graph.add_edge(1, 2)
@@ -124,7 +124,7 @@ describe "#find_subgraphs" do
   end
 end
 
-describe "#largest_clique" do
+describe "largest_clique" do
   it "returns empty array for empty graph" do
     graph = Collections::Graph(Int32).new
     graph.largest_clique.should be_empty
