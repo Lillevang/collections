@@ -13,7 +13,7 @@ Add this to your application's `shard.yml`:
 dependencies:
   collections:
     github: Lillevang/collections
-    version: ~> 0.1.0
+    version: ~> 0.2.5
 ```
 
 Run `shards install`
@@ -32,11 +32,26 @@ puts heap.extract_root! # => 5
 heap = Collections::BinaryHeapMax(Int32).new
 heap.add([10, 20, 5])
 puts heap.extract_root! # => 20
+
+# Graph Example
+graph = Collections::Graph(Int32).new
+graph.add_edge(1, 2)
+graph.add_edge(1, 3)
+puts graph.neighbors(1).map(&.value) # => [2, 3]
+
+# Grid Example
+grid = Collections::Grid(Int32).new(3, 3, 0)
+grid.set(1, 1, 1) # block a cell
+if result = grid.shortest_path({0, 0}, {2, 2})
+  distance, path = result
+  puts distance                     # => 4
+  grid.print_grid(path)
+end
 ```
 
 ## Development
 
-Write code, good code prefered!
+Write code, good code preferred!
 
 Run tests with: `crystal spec`
 
@@ -54,4 +69,4 @@ Released under the MIT License. See LICENSE for details.
 
 ## Contributors
 
-- [Lillevang](https://github.com/your-github-user) - creator and maintainer
+- [Lillevang](https://github.com/Lillevang) - creator and maintainer
