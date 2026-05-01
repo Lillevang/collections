@@ -4,6 +4,7 @@
 
 - `BinaryHeapMin`: A min-heap implementation
 - `BinaryHeapMax`: A max-heap implementation
+- And more!
 
 ## Installation
 
