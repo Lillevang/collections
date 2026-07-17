@@ -65,8 +65,8 @@ module Collections
     end
 
     def largest_clique : Array(T)
-      nodes = @adjacency_list.keys.map(&.value)                           # Get all node values
-      nodes = nodes.sort_by { |node| -(neighbors(node) || [] of T).size } # Sort by degree (descending)
+      nodes = @adjacency_list.keys.map(&.value)              # Get all node values
+      nodes = nodes.sort_by { |node| -neighbors(node).size } # Sort by degree (descending)
       max_clique = [] of T
 
       backtrack_clique([] of T, nodes, max_clique) # Call the backtracking function

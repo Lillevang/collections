@@ -40,4 +40,10 @@ describe Collections::Heap do
     heap.swap(0, 1)
     heap.elements.should eq([20, 10])
   end
+
+  it "Raises when extracting from an empty heap" do
+    heap = TestHeap(Int32).new
+    expect_raises(IndexError, "empty heap") { heap.extract_root }
+    expect_raises(IndexError, "empty heap") { heap.extract_root! }
+  end
 end
