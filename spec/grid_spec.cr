@@ -202,4 +202,38 @@ describe Collections::Grid do
       filled.size.should eq(4)
     end
   end
+
+  describe "#region" do
+    it "returns the connected region without modifying the grid" do
+      grid = Collections::Grid.new(3, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(0, 1, 1)
+      grid.set(1, 0, 1)
+
+      region = grid.region(0, 0)
+      region.map { |point| {point.x, point.y} }.sort!.should eq([{0, 0}, {0, 1}, {1, 0}])
+      # The grid is untouched.
+      grid.get(0, 0).should eq(1)
+      grid.get(0, 1).should eq(1)
+      grid.get(1, 0).should eq(1)
+    end
+
+    it "stops at cells of a different value" do
+      grid = Collections::Grid.new(1, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(0, 1, 2)
+      grid.set(0, 2, 1)
+
+      grid.region(0, 0).map { |point| {point.x, point.y} }.should eq([{0, 0}])
+    end
+
+    it "spreads across diagonals when requested" do
+      grid = Collections::Grid.new(3, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(1, 1, 1) # only diagonally adjacent to (0, 0)
+
+      grid.region(0, 0).size.should eq(1)
+      grid.region(0, 0, diagonal: true).size.should eq(2)
+    end
+  end
 end
