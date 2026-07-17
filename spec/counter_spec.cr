@@ -50,6 +50,18 @@ describe Collections::Counter do
     end
   end
 
+  describe "counts beyond Int32" do
+    it "accumulates values larger than Int32::MAX without overflowing" do
+      counter = Collections::Counter(Symbol).new
+      big = 5_000_000_000_i64 # > Int32::MAX (~2.1e9)
+      counter.increment(:fish, big)
+      counter.increment(:fish, big)
+
+      counter[:fish].should eq(10_000_000_000_i64)
+      counter.total.should eq(10_000_000_000_i64)
+    end
+  end
+
   describe "#total" do
     it "sums all counts" do
       counter = Collections::Counter(Int32).new([1, 1, 2, 3, 3, 3])

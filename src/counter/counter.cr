@@ -10,31 +10,32 @@ module Collections
   # counter.most_common(2) # => [{'i', 4}, {'s', 4}]
   # ```
   class Counter(T)
-    include Enumerable({T, Int32})
+    include Enumerable({T, Int64})
 
     def initialize
-      @counts = {} of T => Int32
+      @counts = {} of T => Int64
     end
 
     # Builds a counter by tallying the occurrences of each element.
     def initialize(elements : Enumerable(T))
-      @counts = {} of T => Int32
+      @counts = {} of T => Int64
       elements.each { |element| increment(element) }
     end
 
     # Returns the count for *key*, or `0` if it is absent.
-    def [](key : T) : Int32
-      @counts.fetch(key, 0)
+    def [](key : T) : Int64
+      @counts.fetch(key, 0_i64)
     end
 
     # Sets the count for *key* explicitly. Zero and negative counts are allowed.
-    def []=(key : T, count : Int32) : Int32
-      @counts[key] = count
+    def []=(key : T, count : Int) : Int64
+      @counts[key] = count.to_i64
     end
 
-    # Adds *by* (default `1`) to *key*'s count and returns the new count.
-    def increment(key : T, by : Int32 = 1) : Int32
-      @counts[key] = self[key] + by
+    # Adds *by* (default `1`) to *key*'s count and returns the new count. Counts
+    # are stored as `Int64`, so large accumulated totals do not overflow.
+    def increment(key : T, by : Int = 1) : Int64
+      @counts[key] = self[key] + by.to_i64
     end
 
     # Increments *key* by one. Returns `self` so calls can be chained.
@@ -44,13 +45,13 @@ module Collections
     end
 
     # Removes *key* entirely, returning its previous count (or `nil` if absent).
-    def delete(key : T) : Int32?
+    def delete(key : T) : Int64?
       @counts.delete(key)
     end
 
     # Returns the sum of all counts.
-    def total : Int32
-      total = 0
+    def total : Int64
+      total = 0_i64
       @counts.each_value { |count| total += count }
       total
     end
@@ -67,22 +68,22 @@ module Collections
       @counts.keys
     end
 
-    def values : Array(Int32)
+    def values : Array(Int64)
       @counts.values
     end
 
-    def to_h : Hash(T, Int32)
+    def to_h : Hash(T, Int64)
       @counts.dup
     end
 
-    def each(& : {T, Int32} ->)
+    def each(& : {T, Int64} ->)
       @counts.each { |key, count| yield({key, count}) }
     end
 
     # Returns the *n* highest-count entries as `{key, count}` pairs, most common
     # first. With no argument, returns every entry sorted by count descending.
     # Ties between equal counts are returned in an unspecified order.
-    def most_common(n : Int32? = nil) : Array({T, Int32})
+    def most_common(n : Int32? = nil) : Array({T, Int64})
       sorted = @counts.to_a.sort_by! { |(_, count)| -count }
       n ? sorted.first(n) : sorted
     end
