@@ -17,6 +17,14 @@ describe Collections::Graph do
       graph.size.should eq(1)
       node.value.should eq(1)
     end
+
+    it "reuses the existing node when the value is already present" do
+      graph = Collections::Graph(Int32).new
+      first = graph.add_node(1)
+      second = graph.add_node(1)
+      second.should be(first) # same object, not a duplicate
+      graph.size.should eq(1)
+    end
   end
 
   describe "#add_edge" do

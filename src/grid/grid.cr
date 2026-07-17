@@ -87,30 +87,42 @@ module Collections
         {0, 1},  # Right
       ]
 
-      queue = [] of Tuple(Int32, Point, Array(Point)) # (distance, point, path)
-      queue << {0, start, [start]}
-      visited = Set(Point).new
+      # BFS. We mark cells visited on enqueue (so each cell is queued at most
+      # once) and reconstruct the path from a came_from map at the end, rather
+      # than carrying a full path copy on every queue entry.
+      queue = Deque(Point){start}
+      visited = Set(Point){start}
+      came_from = {} of Point => Point
 
-      while !queue.empty?
-        distance, point, path = queue.shift
+      until queue.empty?
+        point = queue.shift
+        return reconstruct_path(came_from, start, goal) if point == goal
 
-        # Goal reached
-        return {distance, path} if point == goal
-
-        # Skip if already visited
-        next unless visited.add?(point)
-
-        # Explore neighbors
         directions.each do |dir_x, dir_y|
           nx, ny = point.x + dir_x, point.y + dir_y
+          next if out_of_bounds?(nx, ny) || (filter_blocked && blocked?(nx, ny))
+
           neighbor = Point.new(nx, ny)
-          if !out_of_bounds?(nx, ny) && (!filter_blocked || !blocked?(nx, ny))
-            queue << {distance + 1, neighbor, path + [neighbor]}
-          end
+          next unless visited.add?(neighbor)
+          came_from[neighbor] = point
+          queue << neighbor
         end
       end
 
       nil # No path found
+    end
+
+    # Walk the came_from chain back from goal to start, returning
+    # {number_of_steps, path} with the path ordered start -> goal (inclusive).
+    private def reconstruct_path(came_from : Hash(Point, Point), start : Point, goal : Point) : Tuple(Int32, Array(Point))
+      path = [goal]
+      current = goal
+      while current != start
+        current = came_from[current]
+        path << current
+      end
+      path.reverse!
+      {path.size - 1, path}
     end
 
     def print_grid(path : Array(Point) = [] of Point)
