@@ -4,5 +4,5 @@ require "./heap/binary_heap"
 require "./graph/graph"
 
 module Collections
-  VERSION = "0.1.0"
+  VERSION = "0.2.5"
 end

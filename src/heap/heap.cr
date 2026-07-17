@@ -51,10 +51,12 @@ module Collections
     end
 
     def extract_root
+      raise IndexError.new("cannot extract root from an empty heap") if @elements.empty?
       @elements[0]
     end
 
     def extract_root!
+      raise IndexError.new("cannot extract root from an empty heap") if @elements.empty?
       swap(0, size - 1)
       el = @elements.pop
       swim_down(0)

@@ -72,13 +72,13 @@ module Collections
     def shortest_path(
       start : Tuple(Int32, Int32) | Array(Int32) | Point,
       goal : Tuple(Int32, Int32) | Array(Int32) | Point,
-      filter_blocked : Bool = true
-    ) : Tuple(Int32, Array(Point)) | Nil
+      filter_blocked : Bool = true,
+    ) : Tuple(Int32, Array(Point))?
       start = start.is_a?(Point) ? start : Point.new(start[0], start[1])
       goal = goal.is_a?(Point) ? goal : Point.new(goal[0], goal[1])
 
       # Early exit if start or goal is invalid
-      return nil if blocked?(start.x, start.y) || blocked?(goal.x, goal.y)
+      return if blocked?(start.x, start.y) || blocked?(goal.x, goal.y)
 
       directions = [
         {-1, 0}, # Up

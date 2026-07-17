@@ -24,12 +24,12 @@ describe Collections::Grid do
 
     grid.rows.should eq(70)
     grid.cols.should eq(70)
-    grid.blocked?(1, 1).should eq(true)
-    grid.blocked?(2, 2).should eq(true)
-    grid.blocked?(3, 3).should eq(true)
-    grid.blocked?(4, 4).should eq(false)
+    grid.blocked?(1, 1).should be_true
+    grid.blocked?(2, 2).should be_true
+    grid.blocked?(3, 3).should be_true
+    grid.blocked?(4, 4).should be_false
     grid.set(4, 4, true) # mark as blocked
-    grid.blocked?(4, 4).should eq(true)
+    grid.blocked?(4, 4).should be_true
   end
 
   it "returns valid neighbors" do
