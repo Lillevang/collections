@@ -154,4 +154,52 @@ describe Collections::Grid do
     distance = grid.shortest_path(start, goal)
     distance.should be_nil # No path exists
   end
+
+  describe "#flood_fill" do
+    it "fills a connected region and returns the filled points" do
+      grid = Collections::Grid.new(3, 3, 0)
+      # A 2x2 block of 1s in the top-left, the rest 0.
+      grid.set(0, 0, 1)
+      grid.set(0, 1, 1)
+      grid.set(1, 0, 1)
+      grid.set(1, 1, 1)
+
+      filled = grid.flood_fill(0, 0, 9)
+      filled.map { |point| {point.x, point.y} }.sort!.should eq([{0, 0}, {0, 1}, {1, 0}, {1, 1}])
+      grid.get(0, 0).should eq(9)
+      grid.get(1, 1).should eq(9)
+      # An untouched cell keeps its value.
+      grid.get(2, 2).should eq(0)
+    end
+
+    it "does not cross a region boundary of a different value" do
+      grid = Collections::Grid.new(1, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(0, 1, 2) # wall of a different value
+      grid.set(0, 2, 1)
+
+      filled = grid.flood_fill(0, 0, 9)
+      filled.map { |point| {point.x, point.y} }.should eq([{0, 0}])
+      grid.get(0, 2).should eq(1) # unreached
+    end
+
+    it "spreads across diagonals when requested" do
+      grid = Collections::Grid.new(3, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(1, 1, 1) # only diagonally adjacent to (0, 0)
+
+      orthogonal = Collections::Grid.new(3, 3, 0)
+      orthogonal.set(0, 0, 1)
+      orthogonal.set(1, 1, 1)
+      orthogonal.flood_fill(0, 0, 9).size.should eq(1) # (1,1) not reached
+
+      grid.flood_fill(0, 0, 9, diagonal: true).size.should eq(2) # (1,1) reached
+    end
+
+    it "terminates when the new value equals the target value" do
+      grid = Collections::Grid.new(2, 2, 5)
+      filled = grid.flood_fill(0, 0, 5)
+      filled.size.should eq(4)
+    end
+  end
 end
