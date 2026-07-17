@@ -14,6 +14,6 @@ development_dependencies:
     github: crystal-ameba/ameba
     branch: master # 1.6.4 (latest release) fails to build on Crystal >= 1.21; master supports it
 
-crystal: '>= 1.14.0'
+crystal: '>= 1.21.0'
 
 license: MIT
