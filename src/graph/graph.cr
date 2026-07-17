@@ -4,14 +4,22 @@ module Collections
   class Graph(T)
     property adjacency_list : Hash(Node(T), Array(Node(T)))
 
+    # Index from value to its canonical Node, so lookups are O(1) instead of
+    # scanning every key in the adjacency list.
+    @nodes : Hash(T, Node(T))
+
     def initialize
       @adjacency_list = {} of Node(T) => Array(Node(T))
+      @nodes = {} of T => Node(T)
     end
 
-    def add_node(value : T)
-      node = Node.new(value)
-      @adjacency_list[node] ||= [] of Node(T)
-      node
+    def add_node(value : T) : Node(T)
+      @nodes.fetch(value) do
+        node = Node.new(value)
+        @nodes[value] = node
+        @adjacency_list[node] = [] of Node(T)
+        node
+      end
     end
 
     def add_edge(value_1 : T, value_2 : T)
@@ -103,7 +111,7 @@ module Collections
     end
 
     private def find_node(value : T) : Node(T)?
-      @adjacency_list.keys.find { |node| node.value == value }
+      @nodes[value]?
     end
   end
 end

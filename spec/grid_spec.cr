@@ -61,6 +61,25 @@ describe Collections::Grid do
     distance[0].should eq(8) if distance
   end
 
+  it "returns a contiguous path including start and goal" do
+    grid = Collections::Grid.new(5, 5, false)
+    start = Collections::Grid::Point.new(0, 0)
+    goal = Collections::Grid::Point.new(4, 4)
+
+    result = grid.shortest_path(start, goal)
+    result.should_not be_nil
+    if result
+      steps, path = result
+      path.first.should eq(start)
+      path.last.should eq(goal)
+      path.size.should eq(steps + 1)
+      # every consecutive pair differs by exactly one orthogonal step
+      path.each_cons(2) do |(a, b)|
+        ((a.x - b.x).abs + (a.y - b.y).abs).should eq(1)
+      end
+    end
+  end
+
   it "finds no path if the goal is blocked" do
     grid = Collections::Grid.new(5, 5, false)
     start = Collections::Grid::Point.new(0, 0)
