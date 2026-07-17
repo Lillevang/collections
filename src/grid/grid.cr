@@ -46,8 +46,9 @@ module Collections
       get(x, y) != @default_value
     end
 
-    # Get valid neighbors for the given cell
-    def neighbors(x : Int32, y : Int32, filter_blocked : Bool = true) : Array(Point)
+    # Get valid neighbors for the given cell. Orthogonal (up/down/left/right)
+    # by default; pass `diagonal: true` to also include the four diagonal cells.
+    def neighbors(x : Int32, y : Int32, filter_blocked : Bool = true, diagonal : Bool = false) : Array(Point)
       raise ArgumentError.new("Invalid coordinates") if out_of_bounds?(x, y)
 
       directions = [
@@ -57,10 +58,19 @@ module Collections
         {0, 1},  # Right
       ]
 
+      if diagonal
+        directions.concat([
+          {-1, -1}, # Up-left
+          {-1, 1},  # Up-right
+          {1, -1},  # Down-left
+          {1, 1},   # Down-right
+        ])
+      end
+
       directions.compact_map do |dir_x, dir_y|
         nx, ny = x + dir_x, y + dir_y
         Point.new(nx, ny) unless out_of_bounds?(nx, ny) || (filter_blocked && blocked?(nx, ny))
-      end.compact
+      end
     end
 
     # Helper check if the coordinates are out of bounds
