@@ -3,6 +3,7 @@ require "./heap/heap"
 require "./heap/binary_heap"
 require "./graph/graph"
 require "./counter/counter"
+require "./priority_queue/priority_queue"
 
 module Collections
   VERSION = "0.2.5"
