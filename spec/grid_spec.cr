@@ -81,6 +81,44 @@ describe Collections::Grid do
     ])
   end
 
+  describe ".from_string" do
+    it "builds a Char grid from a multi-line string" do
+      grid = Collections::Grid(Char).from_string("#..\n.#.\n..#")
+      grid.rows.should eq(3)
+      grid.cols.should eq(3)
+      grid.get(0, 0).should eq('#')
+      grid.get(1, 1).should eq('#')
+      grid.get(0, 1).should eq('.')
+    end
+
+    it "uses the default value for blocked? semantics" do
+      grid = Collections::Grid(Char).from_string("#.\n..")
+      grid.blocked?(0, 0).should be_true  # '#' differs from default '.'
+      grid.blocked?(0, 1).should be_false # '.' is the default
+    end
+
+    it "maps characters to arbitrary values via a block" do
+      grid = Collections::Grid(Int32).from_string("12\n34", 0) { |char, _x, _y| char.to_i }
+      grid.get(0, 0).should eq(1)
+      grid.get(0, 1).should eq(2)
+      grid.get(1, 0).should eq(3)
+      grid.get(1, 1).should eq(4)
+    end
+
+    it "handles ragged lines by padding with the default" do
+      grid = Collections::Grid(Char).from_string("abc\nde")
+      grid.rows.should eq(2)
+      grid.cols.should eq(3) # widest line
+      grid.get(1, 1).should eq('e')
+      grid.get(1, 2).should eq('.') # past the end of the short row -> default
+    end
+
+    it "accepts a custom default value" do
+      grid = Collections::Grid(Char).from_string("ab\nc", '#')
+      grid.get(1, 1).should eq('#') # unset ragged cell falls back to custom default
+    end
+  end
+
   it "finds the shortest path in an empty grid" do
     grid = Collections::Grid.new(5, 5, false)
     start = Collections::Grid::Point.new(0, 0)
