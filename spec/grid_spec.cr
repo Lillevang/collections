@@ -53,6 +53,34 @@ describe Collections::Grid do
     ])
   end
 
+  it "returns diagonal neighbors when requested" do
+    grid = Collections::Grid.new(5, 5, false)
+
+    neighbors = grid.neighbors(2, 2, diagonal: true)
+    neighbors.should eq([
+      Collections::Grid::Point.new(1, 2), # Up
+      Collections::Grid::Point.new(3, 2), # Down
+      Collections::Grid::Point.new(2, 1), # Left
+      Collections::Grid::Point.new(2, 3), # Right
+      Collections::Grid::Point.new(1, 1), # Up-left
+      Collections::Grid::Point.new(1, 3), # Up-right
+      Collections::Grid::Point.new(3, 1), # Down-left
+      Collections::Grid::Point.new(3, 3), # Down-right
+    ])
+  end
+
+  it "clips diagonal neighbors at the grid edge" do
+    grid = Collections::Grid.new(5, 5, false)
+
+    # Corner (0, 0): only in-bounds cells remain.
+    neighbors = grid.neighbors(0, 0, diagonal: true)
+    neighbors.should eq([
+      Collections::Grid::Point.new(1, 0), # Down
+      Collections::Grid::Point.new(0, 1), # Right
+      Collections::Grid::Point.new(1, 1), # Down-right
+    ])
+  end
+
   it "finds the shortest path in an empty grid" do
     grid = Collections::Grid.new(5, 5, false)
     start = Collections::Grid::Point.new(0, 0)
