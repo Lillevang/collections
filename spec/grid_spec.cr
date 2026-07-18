@@ -81,6 +81,40 @@ describe Collections::Grid do
     ])
   end
 
+  describe "#wrap" do
+    it "wraps coordinates onto the grid" do
+      grid = Collections::Grid.new(5, 5, 0)
+      grid.wrap(-1, 5).should eq(Collections::Grid::Point.new(4, 0))
+      grid.wrap(6, -2).should eq(Collections::Grid::Point.new(1, 3))
+      grid.wrap(2, 3).should eq(Collections::Grid::Point.new(2, 3))
+    end
+  end
+
+  it "returns wrapped neighbors on a torus" do
+    grid = Collections::Grid.new(5, 5, false)
+
+    # Corner (0, 0): orthogonal neighbors wrap to the opposite edges.
+    neighbors = grid.neighbors(0, 0, toroidal: true)
+    neighbors.should eq([
+      Collections::Grid::Point.new(4, 0), # Up wraps to bottom
+      Collections::Grid::Point.new(1, 0), # Down
+      Collections::Grid::Point.new(0, 4), # Left wraps to right
+      Collections::Grid::Point.new(0, 1), # Right
+    ])
+  end
+
+  it "deduplicates wrapped neighbors and excludes the origin on tiny grids" do
+    grid = Collections::Grid.new(2, 2, false)
+
+    # On a 2x2 torus, opposite orthogonal neighbors coincide.
+    neighbors = grid.neighbors(0, 0, toroidal: true)
+    neighbors.should eq([
+      Collections::Grid::Point.new(1, 0),
+      Collections::Grid::Point.new(0, 1),
+    ])
+    neighbors.should_not contain(Collections::Grid::Point.new(0, 0))
+  end
+
   it "finds the shortest path in an empty grid" do
     grid = Collections::Grid.new(5, 5, false)
     start = Collections::Grid::Point.new(0, 0)
