@@ -1,10 +1,15 @@
 # Collections
 
-`Collections` is a Crystal shard that provides generic data structures like heaps, including:
+`Collections` is a Crystal shard providing generic, dependency-free data
+structures that come up again and again in puzzles and algorithm work:
 
-- `BinaryHeapMin`: A min-heap implementation
-- `BinaryHeapMax`: A max-heap implementation
-- And more!
+- `BinaryHeapMin` / `BinaryHeapMax` — binary heaps (with heapsort)
+- `PriorityQueue` — pop values in priority order
+- `Counter` — a multiset / tally, inspired by Python's `collections.Counter`
+- `DisjointSet` — union-find with path compression and union by rank
+- `Graph` — an undirected graph with clique detection
+- `WeightedGraph` — a weighted graph with Dijkstra shortest paths
+- `Grid` — a 2D grid with neighbours, flood fill, regions and BFS pathfinding
 
 ## Installation
 
@@ -23,32 +28,103 @@ Run `shards install`
 
 ```crystal
 require "collections"
+```
 
-# Min-Heap Example
+### Heaps
+
+```crystal
 heap = Collections::BinaryHeapMin(Int32).new
 heap.add([10, 20, 5])
-puts heap.extract_root! # => 5
+heap.sort           # => [5, 10, 20]  (non-destructive)
+heap.extract_root!  # => 5
 
-# Max-Heap Example
-heap = Collections::BinaryHeapMax(Int32).new
-heap.add([10, 20, 5])
-puts heap.extract_root! # => 20
+Collections::BinaryHeapMax(Int32).new.tap(&.add([10, 20, 5])).extract_root! # => 20
+```
 
-# Graph Example
+### PriorityQueue
+
+The value and the priority are independent types — the value need not be
+comparable.
+
+```crystal
+pq = Collections::PriorityQueue(String, Int32).new
+pq.push("low", 5)
+pq.push("high", 1)
+pq.pop # => "high"
+```
+
+### Counter
+
+Counts are stored as `Int64`, so large tallies do not overflow. Missing keys
+read as `0`.
+
+```crystal
+counter = Collections::Counter(Char).new("mississippi".chars)
+counter['s']           # => 4
+counter['z']           # => 0
+counter.most_common(2) # => [{'i', 4}, {'s', 4}]
+```
+
+### DisjointSet (union-find)
+
+```crystal
+ds = Collections::DisjointSet(Int32).new
+ds.union(1, 2)
+ds.union(2, 3)
+ds.connected?(1, 3) # => true
+ds.count            # => 1  (number of disjoint sets)
+```
+
+### Graph
+
+```crystal
 graph = Collections::Graph(Int32).new
 graph.add_edge(1, 2)
 graph.add_edge(1, 3)
-puts graph.neighbors(1).map(&.value) # => [2, 3]
+graph.neighbors(1).map(&.value) # => [2, 3]
+```
 
-# Grid Example
-grid = Collections::Grid(Int32).new(3, 3, 0)
-grid.set(1, 1, 1) # block a cell
+### WeightedGraph + Dijkstra
+
+```crystal
+graph = Collections::WeightedGraph(String, Int32).new
+graph.add_edge("a", "b", 1)
+graph.add_edge("b", "c", 2)
+graph.shortest_path("a", "c") # => {3, ["a", "b", "c"]}
+graph.dijkstra("a")           # => {"a" => 0, "b" => 1, "c" => 3}
+```
+
+### Grid
+
+```crystal
+grid = Collections::Grid(Char).from_string("...\n.#.\n...")
+grid.neighbors(0, 0)          # orthogonal, in-bounds, unblocked cells
+grid.neighbors(1, 1, diagonal: true)
+
 if result = grid.shortest_path({0, 0}, {2, 2})
   distance, path = result
-  puts distance                     # => 4
+  puts distance
   grid.print_grid(path)
 end
 ```
+
+## Examples
+
+Runnable, Advent-of-Code-flavoured programs live in [`examples/`](examples).
+Run any of them with `crystal run`:
+
+```sh
+crystal run examples/lanternfish.cr
+```
+
+| Example                        | Shows                                          |
+| ------------------------------ | ---------------------------------------------- |
+| `grid_pathfinding.cr`          | Parse a maze from text and BFS the shortest path |
+| `lanternfish.cr`               | `Counter` as a fast-growing `Int64` tally      |
+| `connected_components.cr`      | `DisjointSet` clustering                        |
+| `dijkstra_routes.cr`           | `WeightedGraph` + Dijkstra shortest paths       |
+| `heaps_and_priority_queue.cr`  | Heapsort and a priority queue                   |
+| `graph_cliques.cr`             | `Graph` clique detection                        |
 
 ## Development
 
