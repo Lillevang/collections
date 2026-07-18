@@ -117,6 +117,8 @@ describe Collections::Grid do
       grid = Collections::Grid(Char).from_string("ab\nc", '#')
       grid.get(1, 1).should eq('#') # unset ragged cell falls back to custom default
     end
+  end
+
   describe "#wrap" do
     it "wraps coordinates onto the grid" do
       grid = Collections::Grid.new(5, 5, 0)
