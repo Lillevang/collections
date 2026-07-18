@@ -135,6 +135,51 @@ module Collections
       {path.size - 1, path}
     end
 
+    # Returns the connected region of cells that share the start cell's value,
+    # in traversal order, without modifying the grid. Connectivity is orthogonal
+    # by default; pass `diagonal: true` to also spread across diagonals.
+    #
+    # Cells are matched by value (not by `blocked?`), so this works on any grid.
+    def region(x : Int32, y : Int32, diagonal : Bool = false) : Array(Point)
+      raise ArgumentError.new("Invalid coordinates") if out_of_bounds?(x, y)
+      collect_region(x, y, diagonal)
+    end
+
+    # Flood fills the connected region of cells that share the start cell's
+    # value, replacing each with *new_value*, and returns the filled points in
+    # fill order. Connectivity is orthogonal by default; pass `diagonal: true`
+    # to also spread across diagonals.
+    #
+    # Cells are matched by value (not by `blocked?`), so this works on any grid.
+    def flood_fill(x : Int32, y : Int32, new_value : T, diagonal : Bool = false) : Array(Point)
+      raise ArgumentError.new("Invalid coordinates") if out_of_bounds?(x, y)
+
+      filled = collect_region(x, y, diagonal)
+      filled.each { |point| set(point.x, point.y, new_value) }
+      filled
+    end
+
+    # Breadth-first traversal of the connected region sharing (*x*, *y*)'s value.
+    private def collect_region(x : Int32, y : Int32, diagonal : Bool) : Array(Point)
+      start = Point.new(x, y)
+      target = get(x, y)
+      region = [] of Point
+      visited = Set(Point){start}
+      queue = Deque(Point){start}
+
+      until queue.empty?
+        point = queue.shift
+        region << point
+
+        neighbors(point.x, point.y, filter_blocked: false, diagonal: diagonal).each do |neighbor|
+          next unless get(neighbor.x, neighbor.y) == target
+          queue << neighbor if visited.add?(neighbor)
+        end
+      end
+
+      region
+    end
+
     def print_grid(path : Array(Point) = [] of Point)
       path_set = Set(Point).new(path) # Convert path to a set for quick lookup
 
