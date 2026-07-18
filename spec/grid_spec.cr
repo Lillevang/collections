@@ -117,6 +117,38 @@ describe Collections::Grid do
       grid = Collections::Grid(Char).from_string("ab\nc", '#')
       grid.get(1, 1).should eq('#') # unset ragged cell falls back to custom default
     end
+  describe "#wrap" do
+    it "wraps coordinates onto the grid" do
+      grid = Collections::Grid.new(5, 5, 0)
+      grid.wrap(-1, 5).should eq(Collections::Grid::Point.new(4, 0))
+      grid.wrap(6, -2).should eq(Collections::Grid::Point.new(1, 3))
+      grid.wrap(2, 3).should eq(Collections::Grid::Point.new(2, 3))
+    end
+  end
+
+  it "returns wrapped neighbors on a torus" do
+    grid = Collections::Grid.new(5, 5, false)
+
+    # Corner (0, 0): orthogonal neighbors wrap to the opposite edges.
+    neighbors = grid.neighbors(0, 0, toroidal: true)
+    neighbors.should eq([
+      Collections::Grid::Point.new(4, 0), # Up wraps to bottom
+      Collections::Grid::Point.new(1, 0), # Down
+      Collections::Grid::Point.new(0, 4), # Left wraps to right
+      Collections::Grid::Point.new(0, 1), # Right
+    ])
+  end
+
+  it "deduplicates wrapped neighbors and excludes the origin on tiny grids" do
+    grid = Collections::Grid.new(2, 2, false)
+
+    # On a 2x2 torus, opposite orthogonal neighbors coincide.
+    neighbors = grid.neighbors(0, 0, toroidal: true)
+    neighbors.should eq([
+      Collections::Grid::Point.new(1, 0),
+      Collections::Grid::Point.new(0, 1),
+    ])
+    neighbors.should_not contain(Collections::Grid::Point.new(0, 0))
   end
 
   it "finds the shortest path in an empty grid" do
@@ -191,5 +223,87 @@ describe Collections::Grid do
 
     distance = grid.shortest_path(start, goal)
     distance.should be_nil # No path exists
+  end
+
+  describe "#flood_fill" do
+    it "fills a connected region and returns the filled points" do
+      grid = Collections::Grid.new(3, 3, 0)
+      # A 2x2 block of 1s in the top-left, the rest 0.
+      grid.set(0, 0, 1)
+      grid.set(0, 1, 1)
+      grid.set(1, 0, 1)
+      grid.set(1, 1, 1)
+
+      filled = grid.flood_fill(0, 0, 9)
+      filled.map { |point| {point.x, point.y} }.sort!.should eq([{0, 0}, {0, 1}, {1, 0}, {1, 1}])
+      grid.get(0, 0).should eq(9)
+      grid.get(1, 1).should eq(9)
+      # An untouched cell keeps its value.
+      grid.get(2, 2).should eq(0)
+    end
+
+    it "does not cross a region boundary of a different value" do
+      grid = Collections::Grid.new(1, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(0, 1, 2) # wall of a different value
+      grid.set(0, 2, 1)
+
+      filled = grid.flood_fill(0, 0, 9)
+      filled.map { |point| {point.x, point.y} }.should eq([{0, 0}])
+      grid.get(0, 2).should eq(1) # unreached
+    end
+
+    it "spreads across diagonals when requested" do
+      grid = Collections::Grid.new(3, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(1, 1, 1) # only diagonally adjacent to (0, 0)
+
+      orthogonal = Collections::Grid.new(3, 3, 0)
+      orthogonal.set(0, 0, 1)
+      orthogonal.set(1, 1, 1)
+      orthogonal.flood_fill(0, 0, 9).size.should eq(1) # (1,1) not reached
+
+      grid.flood_fill(0, 0, 9, diagonal: true).size.should eq(2) # (1,1) reached
+    end
+
+    it "terminates when the new value equals the target value" do
+      grid = Collections::Grid.new(2, 2, 5)
+      filled = grid.flood_fill(0, 0, 5)
+      filled.size.should eq(4)
+    end
+  end
+
+  describe "#region" do
+    it "returns the connected region without modifying the grid" do
+      grid = Collections::Grid.new(3, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(0, 1, 1)
+      grid.set(1, 0, 1)
+
+      region = grid.region(0, 0)
+      region.map { |point| {point.x, point.y} }.sort!.should eq([{0, 0}, {0, 1}, {1, 0}])
+      # The grid is untouched.
+      grid.get(0, 0).should eq(1)
+      grid.get(0, 1).should eq(1)
+      grid.get(1, 0).should eq(1)
+    end
+
+    it "stops at cells of a different value" do
+      grid = Collections::Grid.new(1, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(0, 1, 2)
+      grid.set(0, 2, 1)
+
+      grid.region(0, 0).map { |point| {point.x, point.y} }.should eq([{0, 0}])
+    end
+
+    it "spreads across diagonals when requested" do
+      grid = Collections::Grid.new(3, 3, 0)
+      grid.set(0, 0, 1)
+      grid.set(1, 1, 1) # only diagonally adjacent to (0, 0)
+
+      grid.region(0, 0).size.should eq(1)
+      grid.region(0, 0, diagonal: true).size.should eq(2)
+    end
   end
 end

@@ -82,7 +82,12 @@ module Collections
 
     # Get valid neighbors for the given cell. Orthogonal (up/down/left/right)
     # by default; pass `diagonal: true` to also include the four diagonal cells.
-    def neighbors(x : Int32, y : Int32, filter_blocked : Bool = true, diagonal : Bool = false) : Array(Point)
+    #
+    # Pass `toroidal: true` to treat the grid as a torus: neighbors wrap across
+    # the edges (via `#wrap`) instead of being clipped. On small grids where
+    # opposite neighbors land on the same cell, the result is deduplicated and
+    # the origin cell itself is never included.
+    def neighbors(x : Int32, y : Int32, filter_blocked : Bool = true, diagonal : Bool = false, toroidal : Bool = false) : Array(Point)
       raise ArgumentError.new("Invalid coordinates") if out_of_bounds?(x, y)
 
       directions = [
@@ -101,10 +106,30 @@ module Collections
         ])
       end
 
-      directions.compact_map do |dir_x, dir_y|
+      origin = Point.new(x, y)
+      result = directions.compact_map do |dir_x, dir_y|
         nx, ny = x + dir_x, y + dir_y
-        Point.new(nx, ny) unless out_of_bounds?(nx, ny) || (filter_blocked && blocked?(nx, ny))
+        if toroidal
+          point = wrap(nx, ny)
+          next if point == origin
+          point unless filter_blocked && blocked?(point.x, point.y)
+        else
+          Point.new(nx, ny) unless out_of_bounds?(nx, ny) || (filter_blocked && blocked?(nx, ny))
+        end
       end
+
+      toroidal ? result.uniq : result
+    end
+
+    # Wraps a coordinate onto the grid, so values off one edge reappear on the
+    # opposite edge (toroidal / wrap-around indexing).
+    #
+    # ```
+    # grid = Collections::Grid.new(5, 5, 0)
+    # grid.wrap(-1, 5) # => Point(4, 0)
+    # ```
+    def wrap(x : Int32, y : Int32) : Point
+      Point.new(x % @rows, y % @cols)
     end
 
     # Helper check if the coordinates are out of bounds
@@ -167,6 +192,51 @@ module Collections
       end
       path.reverse!
       {path.size - 1, path}
+    end
+
+    # Returns the connected region of cells that share the start cell's value,
+    # in traversal order, without modifying the grid. Connectivity is orthogonal
+    # by default; pass `diagonal: true` to also spread across diagonals.
+    #
+    # Cells are matched by value (not by `blocked?`), so this works on any grid.
+    def region(x : Int32, y : Int32, diagonal : Bool = false) : Array(Point)
+      raise ArgumentError.new("Invalid coordinates") if out_of_bounds?(x, y)
+      collect_region(x, y, diagonal)
+    end
+
+    # Flood fills the connected region of cells that share the start cell's
+    # value, replacing each with *new_value*, and returns the filled points in
+    # fill order. Connectivity is orthogonal by default; pass `diagonal: true`
+    # to also spread across diagonals.
+    #
+    # Cells are matched by value (not by `blocked?`), so this works on any grid.
+    def flood_fill(x : Int32, y : Int32, new_value : T, diagonal : Bool = false) : Array(Point)
+      raise ArgumentError.new("Invalid coordinates") if out_of_bounds?(x, y)
+
+      filled = collect_region(x, y, diagonal)
+      filled.each { |point| set(point.x, point.y, new_value) }
+      filled
+    end
+
+    # Breadth-first traversal of the connected region sharing (*x*, *y*)'s value.
+    private def collect_region(x : Int32, y : Int32, diagonal : Bool) : Array(Point)
+      start = Point.new(x, y)
+      target = get(x, y)
+      region = [] of Point
+      visited = Set(Point){start}
+      queue = Deque(Point){start}
+
+      until queue.empty?
+        point = queue.shift
+        region << point
+
+        neighbors(point.x, point.y, filter_blocked: false, diagonal: diagonal).each do |neighbor|
+          next unless get(neighbor.x, neighbor.y) == target
+          queue << neighbor if visited.add?(neighbor)
+        end
+      end
+
+      region
     end
 
     def print_grid(path : Array(Point) = [] of Point)
