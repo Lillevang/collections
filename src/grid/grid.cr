@@ -32,6 +32,40 @@ module Collections
       @cells = Hash(Point, T).new
     end
 
+    # Builds a grid from a multi-line string, mapping each character to a cell
+    # value via the block. Each line becomes a row (x), each column a `y`; the
+    # grid width is the length of the longest line, and shorter rows are left at
+    # *default_value*.
+    #
+    # ```
+    # grid = Collections::Grid(Int32).from_string("12\n34", 0) { |char, _x, _y| char.to_i }
+    # grid.get(1, 1) # => 4
+    # ```
+    def self.from_string(text : String, default_value : T, & : Char, Int32, Int32 -> T) : Grid(T)
+      lines = text.lines
+      cols = lines.max_of?(&.size) || 0
+      grid = new(lines.size, cols, default_value)
+
+      lines.each_with_index do |line, x|
+        line.each_char_with_index do |char, y|
+          grid.set(x, y, yield(char, x, y))
+        end
+      end
+
+      grid
+    end
+
+    # Builds a `Grid(Char)` from a multi-line string, one character per cell.
+    # *default_value* is the value returned for cells outside a ragged row.
+    #
+    # ```
+    # grid = Collections::Grid(Char).from_string("#..\n.#.")
+    # grid.get(1, 1) # => '#'
+    # ```
+    def self.from_string(text : String, default_value : Char = '.') : Grid(Char)
+      Grid(Char).from_string(text, default_value) { |char, _x, _y| char }
+    end
+
     def set(x : Int32, y : Int32, value : T)
       raise ArgumentError.new("Invalid coordinates") if out_of_bounds?(x, y)
       @cells[Point.new(x, y)] = value
