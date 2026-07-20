@@ -1,4 +1,5 @@
 require "../src/grid/grid"
+require "../src/grid/dense_grid"
 require "./spec_helper"
 
 describe Collections::Grid do
@@ -306,6 +307,31 @@ describe Collections::Grid do
 
       grid.region(0, 0).size.should eq(1)
       grid.region(0, 0, diagonal: true).size.should eq(2)
+    end
+  end
+
+  describe Collections::DenseGrid do
+    it "fills a rectangle and sums" do
+      g = Collections::DenseGrid(Int32).new(3, 3, 0)
+      g.fill_rect(0, 0, 1, 1, 5)
+      g.sum.should eq 20
+    end
+
+    it "updates via a block" do
+      g = Collections::DenseGrid(Int32).new(2, 2, 1)
+      g.update_rect(0, 0, 1, 1) { |v| v + 2 }
+      g.sum.should eq 12
+    end
+
+    it "normalises reversed corners" do
+      g = Collections::DenseGrid(Int32).new(3, 3, 0)
+      g.fill_rect(2, 2, 0, 0, 1)
+      g.count { |v| v == 1 }.should eq 9
+    end
+
+    it "raises out of bounds" do
+      g = Collections::DenseGrid(Int32).new(2, 2, 0)
+      expect_raises(IndexError) { g[5, 0] }
     end
   end
 end
