@@ -309,29 +309,62 @@ describe Collections::Grid do
       grid.region(0, 0, diagonal: true).size.should eq(2)
     end
   end
+end
 
-  describe Collections::DenseGrid do
-    it "fills a rectangle and sums" do
-      g = Collections::DenseGrid(Int32).new(3, 3, 0)
-      g.fill_rect(0, 0, 1, 1, 5)
-      g.sum.should eq 20
-    end
+describe Collections::DenseGrid do
+  it "fills a rectangle and sums" do
+    g = Collections::DenseGrid(Int32).new(3, 3, 0)
+    g.fill_rect(0, 0, 1, 1, 5)
+    g.sum.should eq 20
+  end
 
-    it "updates via a block" do
-      g = Collections::DenseGrid(Int32).new(2, 2, 1)
-      g.update_rect(0, 0, 1, 1) { |v| v + 2 }
-      g.sum.should eq 12
-    end
+  it "updates via a block" do
+    g = Collections::DenseGrid(Int32).new(2, 2, 1)
+    g.update_rect(0, 0, 1, 1) { |v| v + 2 }
+    g.sum.should eq 12
+  end
 
-    it "normalises reversed corners" do
-      g = Collections::DenseGrid(Int32).new(3, 3, 0)
-      g.fill_rect(2, 2, 0, 0, 1)
-      g.count { |v| v == 1 }.should eq 9
-    end
+  it "normalises reversed corners" do
+    g = Collections::DenseGrid(Int32).new(3, 3, 0)
+    g.fill_rect(2, 2, 0, 0, 1)
+    g.count { |v| v == 1 }.should eq 9
+  end
 
-    it "raises out of bounds" do
-      g = Collections::DenseGrid(Int32).new(2, 2, 0)
-      expect_raises(IndexError) { g[5, 0] }
-    end
+  it "raises out of bounds" do
+    g = Collections::DenseGrid(Int32).new(2, 2, 0)
+    expect_raises(IndexError) { g[5, 0] }
+  end
+
+  it "uses (row, col) like Grid" do
+    g = Collections::DenseGrid(Int32).new(2, 3, 0) # 2 rows, 3 cols
+    g.rows.should eq 2
+    g.cols.should eq 3
+    g[1, 2] = 7 # last row, last col
+    g[1, 2].should eq 7
+    expect_raises(IndexError) { g[2, 1] } # row 2 does not exist
+  end
+
+  it "is enumerable" do
+    g = Collections::DenseGrid(Int32).new(2, 2, 3)
+    g.max.should eq 3
+    g.tally.should eq({3 => 4})
+    g.to_a.should eq [3, 3, 3, 3]
+  end
+
+  it "yields coordinates in row-major order" do
+    g = Collections::DenseGrid(Int32).new(2, 2, 0)
+    g[0, 1] = 1
+    g[1, 0] = 2
+    g[1, 1] = 3
+
+    seen = [] of {Int32, Int32, Int32}
+    g.each_with_coords { |v, row, col| seen << {v, row, col} }
+    seen.should eq [{0, 0, 0}, {1, 0, 1}, {2, 1, 0}, {3, 1, 1}]
+  end
+
+  it "rejects non-positive dimensions" do
+    expect_raises(ArgumentError) { Collections::DenseGrid(Int32).new(0, 3, 0) }
+    expect_raises(ArgumentError) { Collections::DenseGrid(Int32).new(3, -1, 0) }
+    expect_raises(ArgumentError) { Collections::DenseGrid(Int32).new(-3, -5, 0) }
   end
 end
