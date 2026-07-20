@@ -1,4 +1,5 @@
 require "./grid/grid"
+require "./grid/dense_grid"
 require "./heap/heap"
 require "./heap/binary_heap"
 require "./graph/graph"
