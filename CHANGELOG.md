@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `DenseGrid(T)` — a dense, fixed-size 2D grid backed by a flat buffer, using
+  the same `(row, col)` convention as `Grid`. O(1) cell access via `[]`/`[]=`,
+  inclusive-rectangle updates (`fill_rect`, `update_rect` with corners in any
+  order), coordinate-aware iteration (`each_with_coords`), and the full
+  `Enumerable(T)` API (`sum`, `count`, `tally`, …).
+
 ## [0.3.0] - 2026-07-18
 
 Grows `Collections` from a heap/graph/grid toolkit into a broader set of
