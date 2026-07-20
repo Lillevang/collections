@@ -19,7 +19,7 @@ Add this to your application's `shard.yml`:
 dependencies:
   collections:
     github: Lillevang/collections
-    version: ~> 0.2.5
+    version: ~> 0.3.1
 ```
 
 Run `shards install`
